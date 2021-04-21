@@ -50,28 +50,52 @@ export default class App extends Component {
     }
     _sendData = () => {
         this.setState({ loading: true, location: null });
-        const teste = GetLocation.getCurrentPosition({
+        GetLocation.getCurrentPosition({
                                    enableHighAccuracy: true,
         })
        .then(location => {
-          axios({
+            this.data(location.latitude, location.longitude);
+        })
+        .catch(ex => {
+            const { code, message } = ex;
+            console.warn(code, message);
+            if (code === 'CANCELLED') {
+                Alert.alert('Location cancelled by user or by another request');
+            }
+            if (code === 'UNAVAILABLE') {
+                Alert.alert('Location service is disabled or unavailable');
+            }
+            if (code === 'TIMEOUT') {
+                Alert.alert('Location request timed out');
+            }
+            if (code === 'UNAUTHORIZED') {
+                Alert.alert('Authorization denied');
+            }
+            this.setState({
+                location: null,
+                loading: false,
+            });
+        });
+     }
+
+    data(latitude, longitude){
+        axios({
             method: 'post',
             url: 'http://192.168.25.8:5001/infectado',
             data: {
-                'dataNascimento': '2025-03-01',
+                'dataNascimento': '2030-03-01',
                 'sexo': 'M',
-                'latitude': location.latitude,
-                'longitude':location.longitude
+                'latitude': latitude,
+                'longitude':longitude
             }
-          })
-          .then(function (response) {
-              console.log(response);
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
+        })
+        .then(function (response) {
+          console.log(response);
+        })
+        .catch(function (error) {
+        console.log(error);
         });
-     }
+    }
 
     render() {
         return (
